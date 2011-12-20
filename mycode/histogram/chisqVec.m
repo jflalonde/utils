@@ -29,7 +29,7 @@ end
 % t = ((h-G).*(h-G))./(h+G+eps); % --> watch out for memory problems
 t = h-G;
 t = t.*t;
-% t = t ./ (h+G+eps); % --> this is f**ing ridiculous
+% t = t ./ (h+G+eps); 
 tDom = h+G;
 clear h G;
 t(t~=0) = t(t~=0) ./ (tDom(t~=0)+eps);
