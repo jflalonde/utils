@@ -22,22 +22,24 @@ function [centers, weights, inds] = signaturesKmeans(data, nbClusters)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % cluster the input data
-centers = vgg_kmeans(data', nbClusters, 'maxiters', 500, 'mindelta', 1e-2);
-
-% compute assignments
-[inds, d2] = vgg_nearest_neighbour(data', centers);
+[centers, inds] = vl_kmeans(data', nbClusters);
+inds = inds';
+centers = centers';
 
 % count number of points in each cluster
 counts = histc(inds, 1:nbClusters);
 
 % drop the centers which do not contain any weight
-centers = centers';
-centers = centers(counts > 0, :);
-counts = counts(counts > 0);
+% centers = centers';
+if any(counts==0)
+    centers = centers(counts > 0, :);
+    nbClusters = size(centers, 1);
 
-% re-compute assignments
-[inds, d2] = vgg_nearest_neighbour(data', centers');
+    % re-compute assignments
+    inds = BruteSearchMex(centers', data');
+    counts = histc(inds, 1:nbClusters);
+end
 
-% normalize and reshape
+% normalize and reshape 
 weights = counts ./ sum(counts(:));
 
