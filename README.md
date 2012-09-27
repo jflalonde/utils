@@ -7,7 +7,8 @@ throughout my other projects. Make sure you download and keep updated!
 Installation
 ------------
 
-Compile the weighted histogram code
+Compile the weighted histogram code:
+
     cd mycode/histogram
     mex whistc.c
 
