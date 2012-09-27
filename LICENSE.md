@@ -1,4 +1,5 @@
 License for Non-Commercial Use
+==============================
 
 If this software is redistributed, this license must be included. The
 term software includes any source files, documentation, executables,
@@ -14,9 +15,10 @@ Office at Carnegie Mellon University.
 This software comes with no warranty or guarantee of any kind. By
 using this software, the user accepts full liability.
 
-This license is written by Jean-Francois Lalonde, Copyright 2006-2011.
+This license is written by Jean-Francois Lalonde, &copy;2006-2011.
 
 NOTE:
+-----
 
 This license applies only to the code inside the mycode/
 directory. All code in 3rd_party are subject to the licenses provided
