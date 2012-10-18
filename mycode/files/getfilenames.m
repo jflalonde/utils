@@ -46,5 +46,5 @@ files(hiddenFilesInd) = [];
 
 % concatenate full path to each file
 if fullpath
-    files = strcat(path, files);
+    files = fullfile(path, files);
 end
