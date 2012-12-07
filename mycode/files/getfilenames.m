@@ -44,7 +44,7 @@ end
 
 
 % remove hidden files
-hiddenFilesInd = cellfun(@(x) x(1)==1, strfind(files, '.'));
+hiddenFilesInd = cellfun(@(x) x(1)=='.', files);
 files(hiddenFilesInd) = [];
 
 % concatenate full path to each file
