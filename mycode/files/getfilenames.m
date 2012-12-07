@@ -3,6 +3,9 @@ function files = getfilenames(path, pattern, fullpath)
 % 
 %   files = getfilenames(basePath, pattern, fullpath)
 %
+%   'pattern': pattern to be matched. The special case of 'images' will find 
+%   all image types in the input directory.
+% 
 %   'fullpath': boolean (defaults to false). When 'true', returns the full
 %   path for each file.
 %   
