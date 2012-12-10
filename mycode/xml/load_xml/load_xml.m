@@ -75,4 +75,14 @@ xml = strrep(xml, ' >', '>');
 
 % Parse the xml header and the rest of the file.
 v = parse_xml_header(xml);
+
+% If the top (and only) field is 'document', just strip it off
+fNames = fieldnames(v);
+if length(fNames) == 1 && strcmp(fNames{1}, 'document')
+    v = v.document;
+end
+
+% convert to numeric values (if available)
+v = struct2numeric(v);
+
  
