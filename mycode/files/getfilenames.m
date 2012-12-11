@@ -24,7 +24,8 @@ end
 % special case: when 'pattern' is 'images', look for all types of images
 if strcmp(pattern, 'images')
     files = dir(fullfile(path));
-    files = {files(:).name};
+    dirInd = [files(:).isdir];
+    files = {files(~dirInd).name};
     
     % TODO: add more here, as needed!
     imgExt = {'.jpg', '.jpeg', '.tif', '.tiff', '.png'};
@@ -39,7 +40,8 @@ if strcmp(pattern, 'images')
     
 else
     files = dir(fullfile(path, pattern));
-    files = {files(:).name};
+    dirInd = [files(:).isdir];
+    files = {files(~dirInd).name};
 end
 
 
