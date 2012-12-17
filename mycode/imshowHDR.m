@@ -1,4 +1,4 @@
-function varargout = imshowHDR(img)
+function varargout = imshowHDR(img, varargin)
 % Displays an image, with keyboard shortcuts to in(de)crease the exposure.
 % 
 %   <h> = imshowHDR(img)
@@ -12,7 +12,7 @@ function varargout = imshowHDR(img)
 % Jean-Francois Lalonde
 
 
-h = imshow(img);
+h = imshow(img, varargin{:});
 
 if nargout == 1
     varargout{1} = h;
@@ -41,11 +41,13 @@ set(figHandle, 'WindowKeyPressFcn', @keyPressFcn);
                     case '['
                         % decrease exposure
                         axesData.imgScaleFactor = axesData.imgScaleFactor/1.5;
+                        set(currAxes, 'UserData', axesData);
                         updateDisplay(axesData);
                         
                     case ']'
                         % increase exposure
                         axesData.imgScaleFactor = axesData.imgScaleFactor*1.5;
+                        set(currAxes, 'UserData', axesData);
                         updateDisplay(axesData);
                         
                     case '0'
@@ -53,8 +55,6 @@ set(figHandle, 'WindowKeyPressFcn', @keyPressFcn);
                         axesData.imgScaleFactor = 1;
                         updateDisplay(axesData);
                 end
-                
-                set(currAxes, 'UserData', axesData);
             end
         end
     end
