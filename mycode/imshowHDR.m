@@ -53,6 +53,7 @@ set(figHandle, 'WindowKeyPressFcn', @keyPressFcn);
                     case '0'
                         % reset exposure
                         axesData.imgScaleFactor = 1;
+                        set(currAxes, 'UserData', axesData);
                         updateDisplay(axesData);
                 end
             end
