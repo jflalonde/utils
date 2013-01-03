@@ -19,7 +19,7 @@ function parseVarargin(varargin)
 % Jean-Francois Lalonde
 
 for i = 1:2:length(varargin)
-    if ~evalin('caller', sprintf('exist(''%s'')', varargin{i}))
+    if ~(evalin('caller', sprintf('exist(''%s'')', varargin{i}))==1)
         error('Parameter "%s" not recognized.', varargin{i});
     end
     assignin('caller', varargin{i}, varargin{i+1});
