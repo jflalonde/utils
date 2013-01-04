@@ -27,34 +27,47 @@ axesData.img = img;
 axesData.imgHandle = h;
 set(axesHandle, 'UserData', axesData);
 
-set(figHandle, 'WindowKeyPressFcn', @keyPressFcn);
+figData = get(figHandle, 'UserData');
+if isfield(figData, 'imshowHDRData')
+    % see if we already have a callback for these axes
+    if ~figData.imshowHDRData.callbacks.isKey(axesHandle)
+        id = iptaddcallback(figHandle, 'WindowKeyPressFcn', @keyPressFcn);
+        figData.imshowHDRData.callbacks(axesHandle) = id;        
+    end
+else
+    id = iptaddcallback(figHandle, 'WindowKeyPressFcn', @keyPressFcn);
+    figData.imshowHDRData.callbacks = containers.Map(axesHandle, id);
+end
+
+set(figHandle, 'UserData', figData);
 
     function keyPressFcn(figHandle, event)
-        if any(strcmp(event.Modifier, 'command'))
-            % 'command' key is held down
-            
-            currAxes = get(figHandle, 'CurrentAxes');
-            axesData = get(currAxes, 'UserData');
-            
-            if ~isempty(axesData)
-                switch event.Character
-                    case '['
-                        % decrease exposure
-                        axesData.imgScaleFactor = axesData.imgScaleFactor/1.5;
-                        set(currAxes, 'UserData', axesData);
-                        updateDisplay(axesData);
-                        
-                    case ']'
-                        % increase exposure
-                        axesData.imgScaleFactor = axesData.imgScaleFactor*1.5;
-                        set(currAxes, 'UserData', axesData);
-                        updateDisplay(axesData);
-                        
-                    case '0'
-                        % reset exposure
-                        axesData.imgScaleFactor = 1;
-                        set(currAxes, 'UserData', axesData);
-                        updateDisplay(axesData);
+        currAxes = get(figHandle, 'CurrentAxes');
+        if currAxes == axesHandle
+            if any(strcmp(event.Modifier, 'command'))
+                % 'command' key is held down
+                axesData = get(currAxes, 'UserData');
+                
+                if ~isempty(axesData)
+                    switch event.Character
+                        case '['
+                            % decrease exposure
+                            axesData.imgScaleFactor = axesData.imgScaleFactor/1.5;
+                            set(currAxes, 'UserData', axesData);
+                            updateDisplay(axesData);
+                            
+                        case ']'
+                            % increase exposure
+                            axesData.imgScaleFactor = axesData.imgScaleFactor*1.5;
+                            set(currAxes, 'UserData', axesData);
+                            updateDisplay(axesData);
+                            
+                        case '0'
+                            % reset exposure
+                            axesData.imgScaleFactor = 1;
+                            set(currAxes, 'UserData', axesData);
+                            updateDisplay(axesData);
+                    end
                 end
             end
         end
