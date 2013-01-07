@@ -72,6 +72,19 @@ end
 xml = strrep(xml, '< ', '<');
 xml = strrep(xml, ' >', '>');
 
+% Remove all comments
+cI = strfind(xml, '<!');
+closeI = strfind(xml, '>');
+toRemove = [];
+for i_c = 1:length(cI)
+    % find closing >
+    indClosing = find(closeI(closeI > cI), 1);
+    assert(~isempty(indClosing), 'Could not find closing > for comment!');
+    
+    toRemove = cat(2, toRemove, cI:closeI(indClosing));
+end
+xml(toRemove) = [];
+
 
 % Parse the xml header and the rest of the file.
 v = parse_xml_header(xml);
