@@ -1,24 +1,20 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function [X, Y, Z] = rgb2xyz(R,G,B)
-%  Converts an image in RGB format to the XYZ format, as described in 
-%  http://en.wikipedia.org/wiki/CIE_1931_Color_Space
-% 
-% Input parameters:
-%
-% Output parameters:
-%   
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [X,Y,Z] = rgb2xyz(R,G,B)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright 2006-2007 Jean-Francois Lalonde
-% Carnegie Mellon University
-% Do not distribute
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Converts RGB to XYZ data.
+%
+%   xyz = rgb2xyz(rgb)
+% 
+% Converts between images.
+%
+%   [x, y, z] = rgb2xyz(r, g, b)
+%
+% Converts between individual channels.
+%
+% See http://en.wikipedia.org/wiki/CIE_1931_Color_Space
+%
+% ----------
+% Jean-Francois Lalonde
 
 if (nargin == 1)
-    R = im2double(R);
-    
     B = R(:,:,3);
     G = R(:,:,2);
     R = R(:,:,1);

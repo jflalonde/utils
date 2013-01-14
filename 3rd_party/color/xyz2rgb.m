@@ -1,23 +1,20 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function [R,G,B] = xyz2rgb(X,Y,Z)
-%  Converts an image in XYZ format to the RGB format
-% 
-% Input parameters:
-%
-% Output parameters:
-%   
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [R,G,B] = xyz2rgb(X,Y,Z)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright 2006-2007 Jean-Francois Lalonde
-% Carnegie Mellon University
-% Do not distribute
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Converts XYZ to RGB data.
+%
+%   rgb = xyz2rgb(xyz)
+% 
+% Converts between images.
+%
+%   [r, g, b] = xyz2rgb(x, y, z)
+%
+% Converts between individual channels.
+%
+% See http://en.wikipedia.org/wiki/CIE_1931_Color_Space
+%
+% ----------
+% Jean-Francois Lalonde
 
 if (nargin == 1)
-    X = im2double(X);
-    
     Z = X(:,:,3);
     Y = X(:,:,2);
     X = X(:,:,1);
@@ -33,6 +30,6 @@ R = reshape(res(1,:), m, n);
 G = reshape(res(2,:), m, n);
 B = reshape(res(3,:), m, n);
 
-if ((nargout == 1) || (nargout == 0))
+if nargout == 1
     R = cat(3,R,G,B);
 end
