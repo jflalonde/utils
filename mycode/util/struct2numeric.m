@@ -15,8 +15,8 @@ for i_array = 1:numel(s)
         else
             % try converting to numeric
             if ischar(s(i_array).(curField))
-                [n,status] = str2num(s(i_array).(curField));
-                if status
+                n = str2double(s(i_array).(curField));
+                if ~isnan(n)
                     % this worked!
                     s(i_array).(curField) = n;
                 end
