@@ -46,29 +46,45 @@ set(figHandle, 'UserData', figData);
         if currAxes == axesHandle
             if any(strcmp(event.Modifier, 'command'))
                 % 'command' key is held down
-                axesData = get(currAxes, 'UserData');
                 
-                if ~isempty(axesData)
-                    switch event.Character
-                        case '['
-                            % decrease exposure
-                            axesData.imgScaleFactor = axesData.imgScaleFactor/1.5;
-                            set(currAxes, 'UserData', axesData);
-                            updateDisplay(axesData);
-                            
-                        case ']'
-                            % increase exposure
-                            axesData.imgScaleFactor = axesData.imgScaleFactor*1.5;
-                            set(currAxes, 'UserData', axesData);
-                            updateDisplay(axesData);
-                            
-                        case '0'
-                            % reset exposure
-                            axesData.imgScaleFactor = 1;
-                            set(currAxes, 'UserData', axesData);
-                            updateDisplay(axesData);
+                if any(strcmp(event.Modifier, 'shift'))
+                    % 'shift' key is also held down
+                    % --> loop over all axes
+                    allAxes = findall(figHandle, 'Type', 'axes');
+                    for i_ax = 1:length(allAxes)
+                        doHDRAction(allAxes(i_ax), event.Character);
                     end
+                    
+                else
+                    doHDRAction(currAxes, event.Character);
                 end
+            end
+        end
+    end
+
+    function doHDRAction(curAxesHandle, character)
+        % Re-scales display according to the user input
+        axesData = get(curAxesHandle, 'UserData');
+        
+        if ~isempty(axesData)
+            switch character
+                case '['
+                    % decrease exposure
+                    axesData.imgScaleFactor = axesData.imgScaleFactor/1.5;
+                    set(curAxesHandle, 'UserData', axesData);
+                    updateDisplay(axesData);
+                    
+                case ']'
+                    % increase exposure
+                    axesData.imgScaleFactor = axesData.imgScaleFactor*1.5;
+                    set(curAxesHandle, 'UserData', axesData);
+                    updateDisplay(axesData);
+                    
+                case '0'
+                    % reset exposure
+                    axesData.imgScaleFactor = 1;
+                    set(curAxesHandle, 'UserData', axesData);
+                    updateDisplay(axesData);
             end
         end
     end
