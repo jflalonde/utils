@@ -42,3 +42,6 @@ elseif nargin == 3
 else
     error('Need either one or 3 inputs');
 end
+
+assert(isfloat(C1) && isfloat(C2) && isfloat(C3), ...
+    'Input must be in floating-point format');

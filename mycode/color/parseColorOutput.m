@@ -11,10 +11,10 @@ function out = parseColorOutput(C1, C2, C3, type, varargin)
 switch type
     case 1
         % image
-        [nrows, ncols, nbands] = size(varargin{1});
-        C1 = reshape(C1, [nrows, ncols, nbands]);
-        C2 = reshape(C2, [nrows, ncols, nbands]);
-        C3 = reshape(C3, [nrows, ncols, nbands]);
+        [nrows, ncols, ~] = size(varargin{1});
+        C1 = reshape(C1, [nrows, ncols]);
+        C2 = reshape(C2, [nrows, ncols]);
+        C3 = reshape(C3, [nrows, ncols]);
         out{1} = cat(3, C1, C2, C3);
         
     case 2
