@@ -123,7 +123,7 @@ classdef Progress < handle
     %elapsed time function you expect to encounter. Having max_degree too
     %high will probably mess up remaining time predictions for less complex
     %processes.
-    max_degree = 2;
+    max_degree = 1;
     %Whether to allow multiple progress bar windows. They are not typically
     %useful, but might be desirable in some cases. However, enabling them
     %causes lots of annoying variables to turn up in the workspace
