@@ -18,7 +18,7 @@ function chi = chisqVec(h, G)
 % Do not distribute
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-h = xrepmat(h./(sum(h(:))+eps), 1, size(G,2));
+h = repmat(h./(sum(h(:))+eps), 1, size(G,2));
 
 % G = G./xrepmat(sum(G,1)+eps, size(G,1), 1); --> this creates a full matrix in sparse format: huge!
 normG = sum(G,1)+eps;
