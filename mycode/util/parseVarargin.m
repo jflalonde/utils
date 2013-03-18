@@ -9,7 +9,7 @@ function parseVarargin(varargin)
 %   var1 = 1;
 %   var2 = 'hello';
 %
-%   % parse varargin
+%   % parse input arguments
 %   parseVarargin(varargin{:});
 %
 %   % var1 and var2 now have the updated value passed in as (optional)
