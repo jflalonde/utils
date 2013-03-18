@@ -23,8 +23,8 @@ B = srgbTrans(B);
         t = 0.0031308;
         a = 0.055;
 
-        C(C<=t) = 12.92.*C;
-        C(C>t)  = (1+a).*C.^(1/2.4)-a;
+        C(C<=t) = 12.92.*C(C<=t);
+        C(C>t)  = (1+a).*C(C>t).^(1/2.4)-a;
     end
 
 varargout = parseColorOutput(R, G, B, type, varargin{:});
