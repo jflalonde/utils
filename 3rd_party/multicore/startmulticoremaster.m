@@ -74,7 +74,7 @@ function resultCell = startmulticoremaster(functionHandleCell, parameterCell, se
 %
 %   See also STARTMULTICORESLAVE, FUNCTION_HANDLE.
 
-debugMode    = 0;
+debugMode    = 1;
 showWarnings = 0;
 
 % parameters
