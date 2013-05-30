@@ -256,7 +256,8 @@ multicoreWaitbar('init2');
 
 % Call "clear functions" to ensure that the latest file versions are used,
 % no older versions in Matlab's memory.
-clear functions
+% JFL edit: do we really need the master to do this?!
+% clear functions
 
 firstRun = true;
 masterIsWorker = settings.masterIsWorker;
