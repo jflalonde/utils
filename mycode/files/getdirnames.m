@@ -1,7 +1,7 @@
 function dirs = getdirnames(path, pattern, fullpath, recurse)
 % Return cell array of directories matching the pattern at the specified path.
 % 
-%   files = getdirnames(basePath, pattern, fullpath)
+%   files = getdirnames(basePath, pattern, fullpath, recurse)
 %
 %   'pattern': pattern to be matched. 
 % 
