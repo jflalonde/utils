@@ -13,40 +13,61 @@ function parseVarargin(varargin)
 %   parseVarargin(varargin{:});
 %
 %   % var1 and var2 now have the updated value passed in as (optional)
-%   argument
+%   % argument
+%
+% It is possible to get the list of optional argument to a function which
+% uses parseVarargin by calling that function with a single argument
+% 'help'. For example, suppose we want to know what the optional arguments
+% of the function myFun, we simply call it:
+%
+%   myFun('help')
+%
+% This will return a list of possible optional arguments. 
 %
 % ----------
 % Jean-Francois Lalonde
 
-if mod(nargin,2)==1
-    % first argument will specify whether to display list or not when there
-    % are no other arguments
-    displayArgs = varargin{1};
-    varargin = varargin(2:end);
-else
-    % defaults to displaying the arguments
-    displayArgs = true;
-end
-    
+helpStr = 'help';
 
 narginCaller = evalin('caller', 'nargin');
-if narginCaller == 0 && displayArgs
+if narginCaller == 1
+    % There does not appear to be a way to retrieve the name of the caller's 
+    % first input argument. So loop over all available variables, and check
+    % if one is exactly 'help'. If so, display this. Otherwise, keep going.
+        
     % Display list of possible arguments and their types
     args = evalin('caller', 'whos');
-    
-    % TODO: parse the file and automatically retrieve the comments directly
-    % above the line where the argument is declared. Output it below. 
-    fprintf('Possible optional arguments: \n');
+    helpMode = false;
     for i_arg=1:length(args)
-        % ignore 'varargin'
-        if ~strcmp(args(i_arg).name, 'varargin')
-            fprintf('  %s (%s)\n', args(i_arg).name, args(i_arg).class);
+        if strcmp(args(i_arg).class, 'char')
+            % we found a string. Check if it corresponds to 'helpStr'
+            val = evalin('caller', args(i_arg).name);
+            if strcmpi(val, helpStr)
+                helpMode = true;
+                
+                % remove the current argument from the list (we know it's
+                % not an optional argument!)
+                args(i_arg) = [];
+                break;
+            end
         end
     end
     
-    error('parseVarargin:displayArgs', ...
-        ['Call function again with valid parameters.' ...
-        '\n (this error is normal -- blame Matlab''s inability to stop execution cleanly.)']);
+    if helpMode
+        % TODO: parse the file and automatically retrieve the comments directly
+        % above the line where the argument is declared. Output it below.
+        fprintf('Possible optional arguments: \n');
+        for i_arg=1:length(args)
+            % ignore 'varargin'
+            if ~strcmp(args(i_arg).name, 'varargin')
+                fprintf('  %s (%s)\n', args(i_arg).name, args(i_arg).class);
+            end
+        end
+        
+        error('parseVarargin:displayArgs', ...
+            ['Call function again with valid parameters.' ...
+            '\n (this error is normal -- blame Matlab''s inability to stop execution cleanly.)']);
+    end
 end
 
 for i = 1:2:length(varargin)
