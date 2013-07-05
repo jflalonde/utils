@@ -58,8 +58,9 @@ if narginCaller == 1
         % above the line where the argument is declared. Output it below.
         fprintf('Possible optional arguments: \n');
         for i_arg=1:length(args)
-            % ignore 'varargin'
-            if ~strcmp(args(i_arg).name, 'varargin')
+            % ignore 'varargin' and 'ans'
+            if ~strcmp(args(i_arg).name, 'varargin') && ...
+                    ~strcmp(args(i_arg).name, 'ans')
                 fprintf('  %s (%s)\n', args(i_arg).name, args(i_arg).class);
             end
         end
