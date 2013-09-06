@@ -185,39 +185,43 @@ classdef Progress < handle
     methods
         
         function a = Progress(finalise_func)
-            %PROGRESS Construct a new progress bar stack
-            if (Progress.multiple_windows)
-                try
-                    a.window_number = evalin('base', 'prog_window_count') + 1;
-                catch %#ok<CTCH>
+            try
+                %PROGRESS Construct a new progress bar stack
+                if (Progress.multiple_windows)
+                    try
+                        a.window_number = evalin('base', 'prog_window_count') + 1;
+                    catch %#ok<CTCH>
+                        a.window_number = 1;
+                    end
+                    assignin('base', 'prog_window_count', a.window_number);
+                else
                     a.window_number = 1;
                 end
-                assignin('base', 'prog_window_count', a.window_number);
-            else
-                a.window_number = 1;
+                %Create an empty, hidden frame for progress bars
+                a.frame = javaObjectEDT('javax.swing.JFrame', 'Progress');
+                a.frame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+                a.frame.getContentPane().setLayout([]);
+                
+                %If there is a finalisation function, create the appropriate button
+                %and set the callback.
+                if (nargin > 0)
+                    a.finalise_button = javaObjectEDT('javax.swing.JButton', 'Finalise');
+                    button_handle = handle(a.finalise_button, 'callbackproperties');
+                    set(button_handle, 'MouseClickedCallback', {@(obj, evt)evalin('base', finalise_func)});
+                    a.frame.getContentPane().add(a.finalise_button);
+                    a.finalise_button.setBounds(395, 3, 80, 24);
+                end
+                
+                %Set the terminate flag (false), and some other initial stuff.
+                assignin('base', ['prog_terminate' num2str(a.window_number)], false);
+                a.bar_count = 0;
+                a.coefs = [];
+                %Set the default colour of the bars (See constants below)
+                javax.swing.UIManager.put('ProgressBar.foreground', ...
+                    javax.swing.plaf.ColorUIResource(Progress.bar_colour));
+            catch ~
+                a = [];
             end
-            %Create an empty, hidden frame for progress bars
-            a.frame = javaObjectEDT('javax.swing.JFrame', 'Progress');
-            a.frame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-            a.frame.getContentPane().setLayout([]);
-            
-            %If there is a finalisation function, create the appropriate button
-            %and set the callback.
-            if (nargin > 0)
-                a.finalise_button = javaObjectEDT('javax.swing.JButton', 'Finalise');
-                button_handle = handle(a.finalise_button, 'callbackproperties');
-                set(button_handle, 'MouseClickedCallback', {@(obj, evt)evalin('base', finalise_func)});
-                a.frame.getContentPane().add(a.finalise_button);
-                a.finalise_button.setBounds(395, 3, 80, 24);
-            end
-            
-            %Set the terminate flag (false), and some other initial stuff.
-            assignin('base', ['prog_terminate' num2str(a.window_number)], false);
-            a.bar_count = 0;
-            a.coefs = [];
-            %Set the default colour of the bars (See constants below)
-            javax.swing.UIManager.put('ProgressBar.foreground', ...
-                javax.swing.plaf.ColorUIResource(Progress.bar_colour));
             
         end
         
@@ -228,55 +232,56 @@ classdef Progress < handle
             % "label: current / max" and updates every time the value is updated
             % (via Progress.set) If this is the first progress bar, the frame
             % becomes visible at this point.
-            
-            %Increment bar count
-            a.bar_count = a.bar_count + 1;
-            %Do a small step size (so in a loop like "for x=1:0.01:10" there
-            %will still be a noticable change when x goes from 1 to 1.01, instead
-            %of only changing when x reaches 2).
-            if (max-min < 5)
-                a.coefs(a.bar_count) = 200 * (max - min);
-            elseif (max-min > 10000)
-                a.coefs(a.bar_count) = 100 / (max - min);
-            else
-                a.coefs(a.bar_count) = 1;
-            end
-            %Create the JProgressBar
-            new_bar = javaObjectEDT('javax.swing.JProgressBar', a.coefs(a.bar_count) * min, ...
-                a.coefs(a.bar_count) * max);
-            %Add it to the frame in the right place
-            a.frame.getContentPane().add(new_bar);
-            %numel(a.finalise_button) tests the existance of the finalisation
-            %button; 0 means no button, 1 means button. Pick frame size
-            %accordingly.
-            a.frame.setSize(400 + (84 * numel(a.finalise_button)), 28 + (a.bar_count * 30));
-            new_bar.setBounds(1, (30 * a.bar_count) - 27, 390, 24);
-            %Initialise some more stuff
-            new_bar.setStringPainted(true);
-            new_bar.setValue(min);
-            new_bar.setString([label ': ' num2str(min) ' / ' num2str(max)]);
-            new_bar.setVisible(1);
-            %Add the necessary data to the instance variables.
-            a.bars{a.bar_count} = new_bar;
-            a.labels{a.bar_count} = label;
-            a.mins(a.bar_count) = min;
-            a.maxs(a.bar_count) = max;
-            a.start_times(a.bar_count) = tic;
-            a.times{a.bar_count} = 0;
-            a.values{a.bar_count} = min;
-            a.remains{a.bar_count} = 100;
-            a.steps(a.bar_count) = 1;
-            %If it's the first bar, make the frame visible too.
-            if (a.bar_count == 1)
-                a.frame.setVisible(1);
-                %Create a close listener
-                frame_handle = handle(a.frame, 'callbackproperties');
-                set(frame_handle, 'WindowClosingCallback', {@(obj, evt)...
-                    assignin('base', ['prog_terminate' num2str(a.window_number)], true)});
-                if (Progress.timestep > 0)
-                    a.ticker = timer('Period', Progress.timestep, 'TimerFcn', @(varargin)a.update(), ...
-                        'executionMode', 'FixedSpacing');
-                    start(a.ticker);
+            if ~isempty(a)
+                %Increment bar count
+                a.bar_count = a.bar_count + 1;
+                %Do a small step size (so in a loop like "for x=1:0.01:10" there
+                %will still be a noticable change when x goes from 1 to 1.01, instead
+                %of only changing when x reaches 2).
+                if (max-min < 5)
+                    a.coefs(a.bar_count) = 200 * (max - min);
+                elseif (max-min > 10000)
+                    a.coefs(a.bar_count) = 100 / (max - min);
+                else
+                    a.coefs(a.bar_count) = 1;
+                end
+                %Create the JProgressBar
+                new_bar = javaObjectEDT('javax.swing.JProgressBar', a.coefs(a.bar_count) * min, ...
+                    a.coefs(a.bar_count) * max);
+                %Add it to the frame in the right place
+                a.frame.getContentPane().add(new_bar);
+                %numel(a.finalise_button) tests the existance of the finalisation
+                %button; 0 means no button, 1 means button. Pick frame size
+                %accordingly.
+                a.frame.setSize(400 + (84 * numel(a.finalise_button)), 28 + (a.bar_count * 30));
+                new_bar.setBounds(1, (30 * a.bar_count) - 27, 390, 24);
+                %Initialise some more stuff
+                new_bar.setStringPainted(true);
+                new_bar.setValue(min);
+                new_bar.setString([label ': ' num2str(min) ' / ' num2str(max)]);
+                new_bar.setVisible(1);
+                %Add the necessary data to the instance variables.
+                a.bars{a.bar_count} = new_bar;
+                a.labels{a.bar_count} = label;
+                a.mins(a.bar_count) = min;
+                a.maxs(a.bar_count) = max;
+                a.start_times(a.bar_count) = tic;
+                a.times{a.bar_count} = 0;
+                a.values{a.bar_count} = min;
+                a.remains{a.bar_count} = 100;
+                a.steps(a.bar_count) = 1;
+                %If it's the first bar, make the frame visible too.
+                if (a.bar_count == 1)
+                    a.frame.setVisible(1);
+                    %Create a close listener
+                    frame_handle = handle(a.frame, 'callbackproperties');
+                    set(frame_handle, 'WindowClosingCallback', {@(obj, evt)...
+                        assignin('base', ['prog_terminate' num2str(a.window_number)], true)});
+                    if (Progress.timestep > 0)
+                        a.ticker = timer('Period', Progress.timestep, 'TimerFcn', @(varargin)a.update(), ...
+                            'executionMode', 'FixedSpacing');
+                        start(a.ticker);
+                    end
                 end
             end
             
@@ -287,31 +292,32 @@ classdef Progress < handle
             % Remove the topmost progress bar from the stack. If this is the only
             % remaining progress bar, this also hides the frame.
             
-            %Remove the bar
-            a.frame.getContentPane().remove(a.bars{a.bar_count});
-            %Decrement count
-            a.bar_count = a.bar_count - 1;
-            %Discard some data. TODO: Take this out? Usually the data can just be
-            %overriden.
-            %a.bars = a.bars(1:a.bar_count);
-            %a.labels = a.labels(1:a.bar_count);
-            %a.mins = a.mins(1:a.bar_count);
-            %a.maxs = a.maxs(1:a.bar_count);
-            %a.start_times = a.start_times(1:a.bar_count);
-            %a.times = a.times(1:a.bar_count);
-            %a.coefs = a.coefs(1:a.bar_count);
-            %Reduce the frame size
-            a.frame.setSize(400 + (84 * numel(a.finalise_button)), 28 + (a.bar_count * 30));
-            %Hide frame if it's empty
-            if (a.bar_count == 0)
-                a.frame.setVisible(0);
-                %Clean up the close listener
-                frame_handle = handle(a.frame, 'callbackproperties');
-                set(frame_handle, 'WindowClosingCallback', {});
-                stop(a.ticker);
-                delete(a.ticker);
+            if ~isempty(a)
+                %Remove the bar
+                a.frame.getContentPane().remove(a.bars{a.bar_count});
+                %Decrement count
+                a.bar_count = a.bar_count - 1;
+                %Discard some data. TODO: Take this out? Usually the data can just be
+                %overriden.
+                %a.bars = a.bars(1:a.bar_count);
+                %a.labels = a.labels(1:a.bar_count);
+                %a.mins = a.mins(1:a.bar_count);
+                %a.maxs = a.maxs(1:a.bar_count);
+                %a.start_times = a.start_times(1:a.bar_count);
+                %a.times = a.times(1:a.bar_count);
+                %a.coefs = a.coefs(1:a.bar_count);
+                %Reduce the frame size
+                a.frame.setSize(400 + (84 * numel(a.finalise_button)), 28 + (a.bar_count * 30));
+                %Hide frame if it's empty
+                if (a.bar_count == 0)
+                    a.frame.setVisible(0);
+                    %Clean up the close listener
+                    frame_handle = handle(a.frame, 'callbackproperties');
+                    set(frame_handle, 'WindowClosingCallback', {});
+                    stop(a.ticker);
+                    delete(a.ticker);
+                end
             end
-            
         end
         
         function reset(a, varargin)
@@ -325,17 +331,19 @@ classdef Progress < handle
             % about the previous run of the bar. But we should be careful since
             % there may be a complexity difference between runs, as a parent bar
             % increases another parameter or somesuch.
-            if (nargin == 1)
-                bar_index = a.bar_count;
-            elseif (nargin == 2)
-                bar_index = a.find_bar(varargin{1});
-            else
-                error('Invalid number of arguments');
+            if ~isempty(a)
+                if (nargin == 1)
+                    bar_index = a.bar_count;
+                elseif (nargin == 2)
+                    bar_index = a.find_bar(varargin{1});
+                else
+                    error('Invalid number of arguments');
+                end
+                a.start_times(a.bar_count) = tic;
+                a.times{a.bar_count} = [];
+                a.values{a.bar_count} = [];
+                a.set_val(bar_index, a.mins(bar_index));
             end
-            a.start_times(a.bar_count) = tic;
-            a.times{a.bar_count} = [];
-            a.values{a.bar_count} = [];
-            a.set_val(bar_index, a.mins(bar_index));
         end
         
         function bar_index = find_bar(a, bar_name)
@@ -344,20 +352,24 @@ classdef Progress < handle
             % FIND_BAR(Index) just returns the index
             % This allows label and index to be used interchangably as parameters
             % to various other methods.
-            if ischar(bar_name)
-                bar_index = find(cell2mat(cellfun(@(x)strcmp(x, bar_name), a.labels, ...
-                    'UniformOutput', false)));
-            else
-                bar_index = bar_name;
-            end
-            if (numel(bar_index) == 0 || bar_index > a.bar_count)
-                error(['Invalid bar name:' bar_name]);
+            if ~isempty(a)
+                if ischar(bar_name)
+                    bar_index = find(cell2mat(cellfun(@(x)strcmp(x, bar_name), a.labels, ...
+                        'UniformOutput', false)));
+                else
+                    bar_index = bar_name;
+                end
+                if (numel(bar_index) == 0 || bar_index > a.bar_count)
+                    error(['Invalid bar name:' bar_name]);
+                end
             end
         end
         
         function set_message(a, message)
-            bar_index = a.bar_count;
-            a.labels{bar_index} = message;
+            if ~isempty(a)
+                bar_index = a.bar_count;
+                a.labels{bar_index} = message;
+            end
         end
         
         function set_val(a, varargin)
@@ -368,116 +380,119 @@ classdef Progress < handle
             % value is reflected in the progress-ness of the bar, and the string.
             
             %Let the swing thread assign the terminate flag if necessary
-            drawnow;
-            %Check for terminate flag
-            if (evalin('base', ['prog_terminate' num2str(a.window_number)]))
-                %Clean up the close listener
-                frame_handle = handle(a.frame, 'callbackproperties');
-                set(frame_handle, 'WindowClosingCallback', {});
-                %Remove the finalise button callback if it exists.
-                if numel(a.finalise_button)
-                    button_handle = handle(a.finalise_button, 'callbackproperties');
-                    set(button_handle, 'MouseClickedCallback', {});
+            if ~isempty(a)
+                drawnow;
+                %Check for terminate flag
+                if (evalin('base', ['prog_terminate' num2str(a.window_number)]))
+                    %Clean up the close listener
+                    frame_handle = handle(a.frame, 'callbackproperties');
+                    set(frame_handle, 'WindowClosingCallback', {});
+                    %Remove the finalise button callback if it exists.
+                    if numel(a.finalise_button)
+                        button_handle = handle(a.finalise_button, 'callbackproperties');
+                        set(button_handle, 'MouseClickedCallback', {});
+                    end
+                    a.remove_ticker();
+                    error('Terminated by user');
                 end
-                a.remove_ticker();
-                error('Terminated by user');
-            end
-            
-            if (nargin == 2)
-                value = varargin{1};
-                bar_index = a.bar_count;
-            elseif (nargin == 3)
-                bar_index = a.find_bar(varargin{1});
-                value = varargin{2};
-            else
-                error('Invalid number of arguments');
-            end
-            
-            %Set the value and string of the topmost progress bar.
-            a.bars{bar_index}.setValue(a.coefs(bar_index) * value);
-            
-            %Find elapsed time and fit a polynomial curve to it
-            elapsed = toc(uint64(a.start_times(bar_index)));
-            a.times{bar_index} = [a.times{bar_index} elapsed];
-            a.values{bar_index} = [a.values{bar_index} value];
-            %Find the number of distinct samples (ignore samples where either the
-            %value or the time is duplicated)
-            samples = min(numel(unique(a.times{bar_index})), numel(unique(a.values{bar_index})));
-            
-            %We need to fit a polynomial to the elapsed time. We'll try to use a
-            %2nd degree polynomial, but if there isn't enough data, or if this
-            %gives as an absurd result (i.e. negative execution time), we'll
-            %reduce the degree.
-            degree = min(samples - 1, Progress.max_degree);
-            remain = -1;
-            while (remain < 0 && degree >= 1)
-                %The polyfit function takes two variables; the first is a list of
-                %times when Progress.set should have been called (i.e. at each step).
-                %The second is a list of elapsed times. The polynomial should compute
-                %an elapsed time as a function of the progress.
-                a.polys{bar_index} = polyfit(a.values{bar_index}, ...
-                    a.times{bar_index}, degree);
-                %Use polynomial to predict the total execution time
-                prediction = fliplr(a.maxs(a.bar_count) .^ (0:degree)) * a.polys{bar_index}';
                 
-                remain = prediction - elapsed;
-                degree = degree - 1;
+                if (nargin == 2)
+                    value = varargin{1};
+                    bar_index = a.bar_count;
+                elseif (nargin == 3)
+                    bar_index = a.find_bar(varargin{1});
+                    value = varargin{2};
+                else
+                    error('Invalid number of arguments');
+                end
+                
+                %Set the value and string of the topmost progress bar.
+                a.bars{bar_index}.setValue(a.coefs(bar_index) * value);
+                
+                %Find elapsed time and fit a polynomial curve to it
+                elapsed = toc(uint64(a.start_times(bar_index)));
+                a.times{bar_index} = [a.times{bar_index} elapsed];
+                a.values{bar_index} = [a.values{bar_index} value];
+                %Find the number of distinct samples (ignore samples where either the
+                %value or the time is duplicated)
+                samples = min(numel(unique(a.times{bar_index})), numel(unique(a.values{bar_index})));
+                
+                %We need to fit a polynomial to the elapsed time. We'll try to use a
+                %2nd degree polynomial, but if there isn't enough data, or if this
+                %gives as an absurd result (i.e. negative execution time), we'll
+                %reduce the degree.
+                degree = min(samples - 1, Progress.max_degree);
+                remain = -1;
+                while (remain < 0 && degree >= 1)
+                    %The polyfit function takes two variables; the first is a list of
+                    %times when Progress.set should have been called (i.e. at each step).
+                    %The second is a list of elapsed times. The polynomial should compute
+                    %an elapsed time as a function of the progress.
+                    a.polys{bar_index} = polyfit(a.values{bar_index}, ...
+                        a.times{bar_index}, degree);
+                    %Use polynomial to predict the total execution time
+                    prediction = fliplr(a.maxs(a.bar_count) .^ (0:degree)) * a.polys{bar_index}';
+                    
+                    remain = prediction - elapsed;
+                    degree = degree - 1;
+                end
+                a.remains{bar_index} = max(remain, 0);
+                
+                %Format the remaining time string
+                timeString = Progress.get_time_string(a.remains{bar_index});
+                a.bars{bar_index}.setString([a.labels{bar_index} ': ' num2str(value) ' / ' num2str(a.maxs(bar_index)) '  ' timeString]);
             end
-            a.remains{bar_index} = max(remain, 0);
-            
-            %Format the remaining time string
-            timeString = Progress.get_time_string(a.remains{bar_index});
-            a.bars{bar_index}.setString([a.labels{bar_index} ': ' num2str(value) ' / ' num2str(a.maxs(bar_index)) '  ' timeString]);
-            
         end
         
         function update(a)
             %UPDATE - Update during the interim between calls to pr.set(). This maintains
             %the illusion of progress to pacify impatient matlabbers.
             
-            %I don't remember why this try-catch is here. Scary stuff!
-            try
-                for b=1:a.bar_count
-                    
-                    %Only update bars with at least two observations
-                    if (numel(a.values{b}) >= 1)
+            if ~isempty(a)
+                %I don't remember why this try-catch is here. Scary stuff!
+                try
+                    for b=1:a.bar_count
                         
-                        %Find a new elapsed time
-                        elapsed = toc(uint64(a.start_times(b)));
-                        %Line search for interim progress, starting from current progress
-                        prediction = -1;
-                        next_value = a.values{b}(end);
-                        %Loop until a polynomial predicts that it will take longer than
-                        %the currently elapsed time. Saturated when we get to the next
-                        %expected observation, just in case.
-                        old_value = next_value;
-                        while ~isempty(a.polys) && (elapsed > prediction && next_value < a.values{b}(end) + a.steps(b))
+                        %Only update bars with at least two observations
+                        if (numel(a.values{b}) >= 1)
+                            
+                            %Find a new elapsed time
+                            elapsed = toc(uint64(a.start_times(b)));
+                            %Line search for interim progress, starting from current progress
+                            prediction = -1;
+                            next_value = a.values{b}(end);
+                            %Loop until a polynomial predicts that it will take longer than
+                            %the currently elapsed time. Saturated when we get to the next
+                            %expected observation, just in case.
                             old_value = next_value;
-                            %Step size of 1%
-                            next_value = next_value + (a.maxs(b) - a.mins(b)) / 100;
-                            %Predict the elapsed time for this observation
-                            prediction = fliplr(next_value .^ (0:(numel(a.polys{b})-1))) * a.polys{b}';
+                            while ~isempty(a.polys) && (elapsed > prediction && next_value < a.values{b}(end) + a.steps(b))
+                                old_value = next_value;
+                                %Step size of 1%
+                                next_value = next_value + (a.maxs(b) - a.mins(b)) / 100;
+                                %Predict the elapsed time for this observation
+                                prediction = fliplr(next_value .^ (0:(numel(a.polys{b})-1))) * a.polys{b}';
+                            end
+                            a.bars{b}.setValue(a.coefs(b) * old_value);
+                            %Just decrement the remaining time, saturate at 0.
+                            a.remains{b} = max(a.remains{b} - Progress.timestep, 0);
+                            
+                            %Format the remaining time string
+                            timeString = Progress.get_time_string(a.remains{b});
+                            a.bars{b}.setString([a.labels{b} ': ' num2str(a.values{b}(end)) ' / ' num2str(a.maxs(b)) '  ' timeString]);
+                            
                         end
-                        a.bars{b}.setValue(a.coefs(b) * old_value);
-                        %Just decrement the remaining time, saturate at 0.
-                        a.remains{b} = max(a.remains{b} - Progress.timestep, 0);
-                        
-                        %Format the remaining time string
-                        timeString = Progress.get_time_string(a.remains{b});
-                        a.bars{b}.setString([a.labels{b} ': ' num2str(a.values{b}(end)) ' / ' num2str(a.maxs(b)) '  ' timeString]);
                         
                     end
-                    
+                catch %#ok<CTCH>
                 end
-            catch %#ok<CTCH>
-            end
-            
-            drawnow;
-            %Check for terminate flag, just delete the timer for this event (need
-            %to wait for the main thread to execute pr.set(value) before it will
-            %actually terminate).
-            if (evalin('base', ['prog_terminate' num2str(a.window_number)]))
-                a.remove_ticker();
+                
+                drawnow;
+                %Check for terminate flag, just delete the timer for this event (need
+                %to wait for the main thread to execute pr.set(value) before it will
+                %actually terminate).
+                if (evalin('base', ['prog_terminate' num2str(a.window_number)]))
+                    a.remove_ticker();
+                end
             end
             
         end
@@ -485,11 +500,12 @@ classdef Progress < handle
         function remove_ticker(a)
             %REMOVE_TICKER Stop and remove the timer object. Many terrible things
             %happen if this isn't done.
-            
-            if (numel(a.ticker))
-                stop(a.ticker);
-                delete(a.ticker);
-                a.ticker = [];
+            if ~isempty(a)
+                if (numel(a.ticker))
+                    stop(a.ticker);
+                    delete(a.ticker);
+                    a.ticker = [];
+                end
             end
             
         end
