@@ -219,8 +219,8 @@ classdef Progress < handle
                 %Set the default colour of the bars (See constants below)
                 javax.swing.UIManager.put('ProgressBar.foreground', ...
                     javax.swing.plaf.ColorUIResource(Progress.bar_colour));
-            catch ~
-                a = [];
+            catch e
+                a.frame = [];
             end
             
         end
@@ -232,7 +232,7 @@ classdef Progress < handle
             % "label: current / max" and updates every time the value is updated
             % (via Progress.set) If this is the first progress bar, the frame
             % becomes visible at this point.
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 %Increment bar count
                 a.bar_count = a.bar_count + 1;
                 %Do a small step size (so in a loop like "for x=1:0.01:10" there
@@ -292,7 +292,7 @@ classdef Progress < handle
             % Remove the topmost progress bar from the stack. If this is the only
             % remaining progress bar, this also hides the frame.
             
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 %Remove the bar
                 a.frame.getContentPane().remove(a.bars{a.bar_count});
                 %Decrement count
@@ -331,7 +331,7 @@ classdef Progress < handle
             % about the previous run of the bar. But we should be careful since
             % there may be a complexity difference between runs, as a parent bar
             % increases another parameter or somesuch.
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 if (nargin == 1)
                     bar_index = a.bar_count;
                 elseif (nargin == 2)
@@ -352,7 +352,7 @@ classdef Progress < handle
             % FIND_BAR(Index) just returns the index
             % This allows label and index to be used interchangably as parameters
             % to various other methods.
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 if ischar(bar_name)
                     bar_index = find(cell2mat(cellfun(@(x)strcmp(x, bar_name), a.labels, ...
                         'UniformOutput', false)));
@@ -366,7 +366,7 @@ classdef Progress < handle
         end
         
         function set_message(a, message)
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 bar_index = a.bar_count;
                 a.labels{bar_index} = message;
             end
@@ -380,7 +380,7 @@ classdef Progress < handle
             % value is reflected in the progress-ness of the bar, and the string.
             
             %Let the swing thread assign the terminate flag if necessary
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 drawnow;
                 %Check for terminate flag
                 if (evalin('base', ['prog_terminate' num2str(a.window_number)]))
@@ -448,7 +448,7 @@ classdef Progress < handle
             %UPDATE - Update during the interim between calls to pr.set(). This maintains
             %the illusion of progress to pacify impatient matlabbers.
             
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 %I don't remember why this try-catch is here. Scary stuff!
                 try
                     for b=1:a.bar_count
@@ -500,7 +500,7 @@ classdef Progress < handle
         function remove_ticker(a)
             %REMOVE_TICKER Stop and remove the timer object. Many terrible things
             %happen if this isn't done.
-            if ~isempty(a)
+            if ~isempty(a.frame)
                 if (numel(a.ticker))
                     stop(a.ticker);
                     delete(a.ticker);
