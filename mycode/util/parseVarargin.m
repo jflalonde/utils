@@ -24,6 +24,10 @@ function parseVarargin(varargin)
 %
 % This will return a list of possible optional arguments. 
 %
+% TODO: 
+%   Fix problem when passing 'help' to a class member function... sets
+%   default first argument to the object itself. e.g.: m.function('help')
+%
 % ----------
 % Jean-Francois Lalonde
 
