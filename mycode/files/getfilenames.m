@@ -43,7 +43,7 @@ end
 % special case: when 'pattern' is 'images', look for all types of images
 if strcmp(pattern, 'images')
     curFiles = dir(fullfile(path));
-    dirInd = [files(:).isdir];
+    dirInd = [curFiles(:).isdir];
     curFiles = {curFiles(~dirInd).name};
     
     % TODO: add more here, as needed!
