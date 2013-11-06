@@ -19,6 +19,11 @@ for i_array = 1:numel(s)
                 if ~isnan(n)
                     % this worked!
                     s(i_array).(curField) = n;
+                else
+                    % check if the string is 'NaN'
+                    if strcmp(s(i_array).(curField), 'NaN')
+                        s(i_array).(curField) = NaN;
+                    end
                 end
             end
         end
