@@ -24,9 +24,11 @@ else
     fprintf('Not found in cache. Computing...'); tic;
     
     results = cell(1, nargout);
-    [results{:}] = fnHandle(varargin{:}); %#ok
+    [results{:}] = fnHandle(varargin{:});
     [~,~,~] = mkdir(fileparts(cacheFile));
     save(cacheFile, 'results');
+    
+    varargout = results;
     
     fprintf('done in %2.fs\n', toc);
 end
