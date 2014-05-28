@@ -4,8 +4,8 @@
 %
 % Input parameters:
 %   - vec: the input vector (size MxN)
-%   - nbBins: number of bins of the output histogram. MUST be the same in
-%   each dimension
+%   - nbBins: number of bins of the output histogram. Can be different for
+%   each dimension. 
 %   - varargin: Override the min and max with input values. Must be 1xN
 %   vectors
 %
@@ -39,15 +39,15 @@ else
     maxVals = max(vec);
 end
 
-nbDims = size(vec, 2);
+if isscalar(nbBins)
+    nbBins = nbBins.*ones(size(minVals));
+else
+    assert(isequal(size(minVals), size(nbBins)));
+end
 
 % compute the edges in each dimension
-span = maxVals - minVals;
-step = repmat(span ./ nbBins, nbBins+1, 1);
-edges = repmat((0:nbBins)', 1, nbDims) .* step + repmat(minVals, nbBins+1, 1);
-edges(end,:) = edges(end,:) + eps;
-
-c = mat2cell(edges, size(edges, 1), ones(1, nbDims));
+c = arrayfun(@(b, mn, mx) linspace(mn, mx, b+1)', nbBins, minVals, maxVals, ...
+    'UniformOutput', false);
 [hist, binInd] = histnd(vec, c{:});
 
 s = size(hist);
