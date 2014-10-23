@@ -50,6 +50,9 @@ elseif isstruct(input)
         h = hashKey({struct2cell(input), fieldnames(input)});
     end
     
+elseif isa(input, 'containers.Map')
+    h = hashKey(values(input));
+        
 else
     % at this point, we don't support anything else
     error('Unsupported input type');
