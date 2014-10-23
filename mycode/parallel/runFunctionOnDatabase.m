@@ -37,6 +37,11 @@ indToProcess = [];
 
 parseVarargin(varargin{:});
 
+if islogical(indToProcess)
+    % expecting indexed vector
+    indToProcess = find(indToProcess);
+end
+
 dbType = getDatabaseType(db);
 
 pBar.push_bar(pBarMessage, 1, length(db.(dbType)));
