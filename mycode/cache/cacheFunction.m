@@ -1,14 +1,25 @@
 function varargout = cacheFunction(fnHandle, varargin)
 % Main 'caching' function.
 %
-%   [...] = cacheFunction(fnHandle, ...)
+% [...] = cacheFunction(fnHandle, ...)
+%
+% [...] = cacheFunction(fnHandle, 'hashKey', hashKey, ...)
+%
+%   Over-ride hash key with input one. Use at your own risk!
 %
 % 
 % ----------
 % Jean-Francois Lalonde
 %
 
-h = hashKey(varargin{:});
+% look for 'hashKey' in the inputs
+indHashKey = find(strcmp(varargin, 'hashKey'));
+if ~isempty(indHashKey)
+    h = varargin{indHashKey+1};
+    varargin(indHashKey:indHashKey+1) = [];
+else
+    h = hashKey(varargin{:});
+end
 
 cachePath = getPathName('results', 'cache');
 cacheFile = fullfile(cachePath, func2str(fnHandle), [h '.mat']);
