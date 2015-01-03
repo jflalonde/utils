@@ -13,7 +13,7 @@ function varargout = cacheFunction(fnHandle, varargin)
 %
 
 % look for 'hashKey' in the inputs
-indHashKey = find(strcmp(varargin, 'hashKey'));
+indHashKey = find(strcmpi(varargin, 'hashkey'));
 if ~isempty(indHashKey)
     h = varargin{indHashKey+1};
     varargin(indHashKey:indHashKey+1) = [];
