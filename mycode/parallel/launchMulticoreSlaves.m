@@ -22,7 +22,7 @@ screenName = 'matlabSlaves';
 sleepTime = []; 
 
 % matlab full path
-matlabCmd = '/Applications/MATLAB_R2013a.app/bin/matlab -nodesktop -nosplash 2> /dev/null';
+matlabCmd = '/Applications/MATLAB_R2014b.app/bin/matlab -nodesktop -nosplash 2> /dev/null';
 
 parseVarargin(varargin{:});
 
