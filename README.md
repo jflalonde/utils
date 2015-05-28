@@ -21,3 +21,7 @@ Compile the KDE code:
 
     cd 3rd_party/@kde/mex
     makemex
+
+Get export_fig from:
+
+    https://github.com/altmany/export_fig
