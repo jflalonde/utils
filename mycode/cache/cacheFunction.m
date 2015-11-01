@@ -29,7 +29,13 @@ if exist(cacheFile, 'file')
         func2str(fnHandle)); tic;
     
     % has been cached already! just load from cache
-    results = loadSorted(cacheFile);
+    results = load(cacheFile);
+    if nargout > length(results.results)
+        error(['Function %s was cached with only %d outputs, but %d were requested. ' ...
+            'Please delete the file %s \nand run again.'], ...
+            func2str(fnHandle), length(results.results), nargout, cacheFile);
+    end
+    
     varargout = results.results(1:nargout);
 else
     % has not yet been cached. compute (and store) it.
