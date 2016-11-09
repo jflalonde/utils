@@ -53,6 +53,13 @@ switch dbType
         dbInfo = db.face(varargin{1});
         dbId = varargin{1};
         
+        % copy the other fields
+        f = fieldnames(db);
+        f(cellfun(@(s) strcmpi(s, 'face'), f)) = [];
+        for i_f = 1:length(f)
+            dbInfo.db.(f{i_f}) = db.(f{i_f});
+        end
+        
     case 'generic'
         dbInfo = db.generic(varargin{1});
         dbId = varargin{1};
@@ -63,4 +70,4 @@ switch dbType
 end
 
 % concatenate the path to the database!
-dbInfo.db = struct('path', db.path);
+dbInfo.db.path = db.path;
