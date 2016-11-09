@@ -52,8 +52,11 @@ elseif isstruct(input)
     
 elseif isa(input, 'containers.Map')
     h = hashKey(values(input));
+    
+elseif isa(input, 'EnvironmentMap') 
+    h = hashKey({input.data, char(input.format)});
         
 else
     % at this point, we don't support anything else
-    error('Unsupported input type');
+    error('Unsupported hash key type');
 end

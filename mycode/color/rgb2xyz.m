@@ -7,7 +7,7 @@ function varargout = rgb2xyz(varargin)
 %
 % Takes in image, vector (3xN) or independent channels.
 %
-% See http://en.wikipedia.org/wiki/CIE_1931_Color_Space
+% See https://en.wikipedia.org/wiki/CIE_1931_color_space
 %
 % ----------
 % Jean-Francois Lalonde

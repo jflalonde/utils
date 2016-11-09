@@ -7,14 +7,31 @@ function varargout = cacheFunction(fnHandle, varargin)
 %
 %   Over-ride hash key with input one. Use at your own risk!
 %
+% [...] = cacheFunction(..., 'useCache', false, ...)
+%
+%   Disables the use of the cache (for convenience)
+%
 % 
 % ----------
 % Jean-Francois Lalonde
 %
 
+% disable the use of the cache if needed
+indUseCache = find(strcmpi(varargin, 'useCache'));
+if ~isempty(indUseCache)
+    useCache = varargin{indUseCache+1};
+    varargin(indUseCache:indUseCache+1) = [];
+    
+    if ~useCache
+        varargout = cell(1, nargout);
+        [varargout{:}] = fnHandle(varargin{:});
+        return;
+    end
+end
+
 % look for 'hashKey' in the inputs
 indHashKey = find(strcmpi(varargin, 'hashkey'));
-if ~isempty(indHashKey)
+if ~isempty(indHashKey) && ~isempty(varargin{indHashKey+1})
     h = varargin{indHashKey+1};
     varargin(indHashKey:indHashKey+1) = [];
 else
