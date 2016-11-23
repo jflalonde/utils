@@ -75,6 +75,9 @@ end
 pBar.pop_bar();
 
 if parallel
+    if exist(getPathName(local, 'slaves'), 'dir') == 0
+        mkdir(getPathName(local, 'slaves'));
+    end
     % start the processing!
     settings = struct('multicoreDir', getPathName(local, 'slaves'), ...
         'nrOfEvalsAtOnce', nrOfEvalsAtOnce, 'useWaitbar', useWaitbar, ...

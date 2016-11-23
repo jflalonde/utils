@@ -7,15 +7,12 @@ throughout my other projects. Make sure you download and keep updated!
 Installation
 ------------
 
+Update: the CalcMD5 code should now auto-compile upon its first exectuion.
+
 Compile the weighted histogram code:
 
     cd mycode/histogram
     mex whistc.c
-
-Compile the MD5 code:
-
-    cd 3rd_party/CalcMD5
-    mex CalcMD5.c
 
 Compile the KDE code:
 

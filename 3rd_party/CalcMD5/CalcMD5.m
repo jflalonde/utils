@@ -67,5 +67,21 @@ function MD5 = CalcMD5(Data, InClass, OutClass)  %#ok<STOUT,INUSD>
 
 % If the current Matlab path is the parent folder of this script, the
 % MEX function is not found - change the current directory!
-error(['JSim:', mfilename, ':NoMex'], 'Cannot find MEX script.');
+if ~exist(['CalcMD5' mexext], 'file')
+    warning('CalcMD5 does not seem compiled. Compiling...');
+    old_cd = pwd;
+    cd(fileparts(mfilename('fullpath')));
+    if strcmpi(mex.getCompilerConfigurations('C').Name(1:3), 'gcc')
+        mex CFLAGS="\$CFLAGS -std=c99" CalcMD5.c
+    else
+        mex CalcMD5.c
+    end
+    cd(old_cd);
 
+    if (nargin < 2), MD5 = CalcMD5(Data);
+    elseif (nargin < 3), MD5 = CalcMD5(Data, InClass);
+    else MD5 = CalcMD5(Data, InClass);
+    end
+else
+    error(['JSim:', mfilename, ':NoMex'], 'Cannot find MEX script.');
+end
